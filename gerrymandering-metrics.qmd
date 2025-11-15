@@ -4,8 +4,65 @@ format: typst
 ---
 
 ### 2024 Election Results and the 2024 District Map
-
-
+```{r}
+library(tidyverse)
+district <- clean %>% 
+  group_by(CDDIST) %>% 
+  summarize(
+    dem = sum(DEMVOTE, na.rm = TRUE),
+    rep = sum(REPVOTE, na.rm = TRUE),
+    total = sum(TOTVOTE, na.rm = TRUE)
+  ) %>% 
+  mutate(
+    dem_share = dem / total,
+    rep_share = rep / total
+  )
+```
+## Mean–Median Score
+```{r}
+mean_median_score <- mean(district$dem_share) - median(district$dem_share)
+```
+# Wasted Votes 
+```{r}
+wasted_votes <- function(votes_A, votes_B) {
+  total <- votes_A + votes_B
+  win_threshold <- floor(total / 2) + 1
+  
+  if (votes_A > votes_B) {
+    wasted_A <- votes_A - win_threshold
+    wasted_B <- votes_B
+  } else {
+    wasted_A <- votes_A
+    wasted_B <- votes_B - win_threshold
+  }
+  
+  c(A = wasted_A, B = wasted_B)
+}
+```
+# Apply it
+```{r}
+wasted_df <- district %>% 
+  rowwise() %>% 
+  mutate(
+    wasted = list(wasted_votes(dem, rep)),
+    wasted_dem = wasted[["A"]],
+    wasted_rep = wasted[["B"]]
+  ) %>% 
+  ungroup()
+```
+# Efficiency Gap
+```{r}
+total_wasted_dem <- sum(wasted_df$wasted_dem)
+total_wasted_rep <- sum(wasted_df$wasted_rep)
+efficiency_gap <- (total_wasted_dem - total_wasted_rep) / sum(district$total)
+```
+# Results
+```{r}
+list(
+  mean_median_score = mean_median_score,
+  efficiency_gap = efficiency_gap
+)
+```
 
 ### 2024 Election Results and the proposed 2025 District Map
-
+can't see the information on the website, dont' know what to do here, for that reason i can't do part 6, and similarly i can't find the information for part 7

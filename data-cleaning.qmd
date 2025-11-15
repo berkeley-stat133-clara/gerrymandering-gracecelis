@@ -3,3 +3,36 @@ title: Data Cleaning
 format: typst
 ---
 
+```{r}
+library(tidyverse)
+```
+
+### Reading in the Original Data
+```{r}
+unclean <- read_csv("c:/Users/grace/stat133/gerrymandering-gracecelis/data/g24_sov_by_g24_svprec.csv")
+glimpse(unclean)
+```
+
+### Fixing the Columns
+```{r}
+clean <- unclean |>
+  mutate(across(
+    where(~ is.character(.x) && all(grepl("^[0-9\\.]+$", .x) | .x == "")),
+    as.numeric
+  ))
+```
+
+### Checking the Values
+```{r}
+summary(clean)
+```
+
+### Checking the Uniqueness
+```{r}
+clean |> count(SVPREC_KEY) |> filter(n > 1)
+```
+
+### Writing in Cleaned File
+```{r}
+write_csv(clean, "c:/Users/grace/stat133/gerrymandering-gracecelis/data/g24-results-clean.csv")
+```

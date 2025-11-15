@@ -5,24 +5,72 @@ format: typst
 
 ### Question 1
 
-Put your question here.
+Which precinct has the biggest gap between candidates? 
 
 ### Answer 1
+```{r}
+gap_df <- clean |> 
+  mutate(margin = abs(DEMVOTE - REPVOTE)) |> 
+  arrange(desc(margin))
 
-Put your answer here.
+gap_df |> slice(1)
+```
+## Visualization
+```{r}
+ggplot(gap_df, aes(margin)) +
+  geom_histogram() +
+  labs(title = "Distribution of Vote Margins Across Precincts",
+       x = "Vote Margin",
+       y = "Number of Precincts")
+```
 
 ### Question 2
 
-Put your question here.
+Were there more Republican or Democratic winners?
 
 ### Answer 2
+```{r}
+winner_df <- clean |> 
+  mutate(
+    winner = case_when(
+      DEMVOTE > REPVOTE ~ "Democrat",
+      REPVOTE > DEMVOTE ~ "Republican",
+      TRUE ~ "Tie"
+    )
+  )
 
-Put your answer here.
+winner_df |> 
+  count(winner)
+```
+## Visualization
+```{r}
+winner_df |> 
+  count(winner) |> 
+  ggplot(aes(x = winner, y = n)) +
+  geom_col() +
+  labs(title = "Number of Precincts Won by Each Party",
+       x = "Winning Party",
+       y = "Count of Precincts")
+```
 
 ### Question 3
 
-Put your question here.
+Which precinct had the highest voter turnout?
 
 ### Answer 3
+```{r}
+turnout_df <- clean |> 
+  mutate(turnout = TOTVOTE / TOTREG) |> 
+  filter(TOTREG > 0) |>          
+  arrange(desc(turnout))
 
-Put your answer here.
+turnout_df |> slice(1)           
+```
+## Visualization
+```{r}
+ggplot(turnout_df, aes(turnout)) +
+  geom_histogram() +
+  labs(title = "Turnout Rates Across Precincts",
+       x = "Turnout Rate",
+       y = "Number of Precincts")
+```
